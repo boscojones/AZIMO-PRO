@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="ICON.JPEG" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebulax UTX Configuration</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000; /* Preto para fundo */
+            color: #fff;
+        }
+        #chat-container {
+            width: 90%;
+            max-width: 800px; /* Aumentado para melhorar a largura */
+            padding: 30px;
+            background: #ff6600; /* Laranja para fundo */
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            overflow: hidden;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em; /* Aumentado para melhor legibilidade */
+            color: #00bfff; /* Azul bebê para título */
+            margin-bottom: 20px;
+        }
+        #messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background-color: #333; /* Preto para mensagens */
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .message.user {
+            text-align: right;
+            background-color: #ffa500; /* Laranja para mensagens do usuário */
+            color: #fff; /* Branco para texto do usuário */
+            margin-left: auto;
+            border-radius: 10px 10px 0 10px;
+        }
+        .message.bot {
+            text-align: left;
+            background-color: #00bfff; /* Azul bebê para mensagens do bot */
+            color: #000; /* Preto para texto do bot */
+            border-radius: 10px 10px 10px 0;
+        }
+        #input-container {
+            display: flex;
+            background-color: #444;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        #input-container input {
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            background-color: #222;
+            color: #fff;
+            flex: 1;
+        }
+        #input-container button {
+            padding: 15px;
+            border: none;
+            background: #00bfff; /* Azul bebê para botão */
+            color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #input-container button:hover {
+            background: #007acc; /* Azul mais escuro no hover */
+        }
+        /* Configuration Styles */
+        #config-container {
+            margin-top: 20px;
+            background-color: #444;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        #config-container h2 {
+            text-align: center;
+            font-size: 1.5em;
+            color: #00bfff;
+        }
+        .config-option {
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em; /* Ajusta o tamanho do título para telas menores */
+            }
+            #chat-container {
+                padding: 15px; /* Menos padding em telas menores */
+            }
+            #input-container input {
+                padding: 10px; /* Menos padding no input */
+            }
+            #input-container button {
+                padding: 10px; /* Menos padding no botão */
+                font-size: 14px; /* Fonte menor para o botão */
+            }
+            #config-container h2 {
+                font-size: 1.2em; /* Ajusta o tamanho do título da configuração */
+            }
+            .config-option {
+                flex-direction: column; /* Altera a direção para coluna em telas pequenas */
+                align-items: flex-start; /* Alinha os itens à esquerda */
+            }
+            .config-option label {
+                margin-bottom: 5px; /* Adiciona espaçamento entre o label e o input */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1>Nebulax UTX</h1>
+        <div id="messages"></div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <div id="config-container">
+            <h2>Configuration Center</h2>
+            <div class="config-option">
+                <label for="bg-color">Background Color:</label>
+                <input type="color" id="bg-color" value="#ff6600" onchange="changeBackgroundColor()">
+            </div>
+            <div class="config-option">
+                <label for="font-size">Font Size:</label>
+                <select id="font-size" onchange="changeFontSize()">
+                    <option value="14">Small</option>
+                    <option value="16" selected>Medium</option>
+                    <option value="18">Large</option>
+                </select>
+            </div>
+            <div class="config-option">
+                <label for="message-color">Message Color:</label>
+                <input type="color" id="message-color" value="#00bfff" onchange="changeMessageColor()">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            if (!userInput) return;
+
+            // Exibir mensagem do usuário
+            addMessage('user', userInput);
+
+            // Enviar a mensagem para o servidor via POST
+            try {
+                const response = await fetch('http://localhost:8080/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userInput }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    addMessage('bot', data.response); // Exibir a resposta do servidor (bot)
+                } else {
+                    addMessage('bot', 'Erro no servidor. Tente novamente.');
+                }
+            } catch (error) {
+                addMessage('bot', 'Falha na conexão com o servidor.');
+            }
+
+            // Limpar campo de input após envio
+            document.getElementById('user-input').value = '';
+        }
+
+        function addMessage(sender, text) {
+            const messageContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${sender}`;
+            messageElement.textContent = text;
+            messageContainer.appendChild(messageElement);
+            messageContainer.scrollTop = messageContainer.scrollHeight; // Scroll automático
+        }
+
+        function changeBackgroundColor() {
+            const newColor = document.getElementById('bg-color').value;
+            document.getElementById('chat-container').style.backgroundColor = newColor;
+        }
+
+        function changeFontSize() {
+            const newSize = document.getElementById('font-size').value + 'px';
+            document.body.style.fontSize = newSize;
+        }
+
+        function changeMessageColor() {
+            const newColor = document.getElementById('message-color').value;
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                if (message.classList.contains('bot')) {
+                    message.style.backgroundColor = newColor; // Change bot message color
+                }
+            });
+        }
+    </script>
+</body>
+</html>

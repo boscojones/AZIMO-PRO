@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="ICON.JPEG" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mango X Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000; /* Black background */
+            color: #fff;
+        }
+        #chat-container {
+            width: 90%;
+            max-width: 600px; /* Increased max-width for larger chats */
+            padding: 30px;
+            background: rgba(255, 102, 0, 0.8); /* Mango orange */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+            position: relative;
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            height: 90vh; /* Full height for chat */
+        }
+        h1 {
+            text-align: center;
+            color: #007bff; /* Title color */
+            margin-bottom: 20px;
+        }
+        #messages {
+            flex: 1; /* Allow messages to take available space */
+            padding: 20px;
+            overflow-y: auto;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background-color: #ff5722; /* Tropical orange */
+            margin-bottom: 20px; /* Space below the messages */
+            max-height: 400px; /* Increased height for better visibility */
+        }
+        .message {
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .message.user {
+            text-align: right;
+            color: #ffffff; /* User message color */
+        }
+        .message.bot {
+            text-align: left;
+            color: #fff; /* Bot message color */
+        }
+        #input-container {
+            display: flex;
+            flex-direction: column; /* Stack the elements vertically */
+            padding: 10px;
+            background-color: #ff9800; /* Bright mango orange */
+            border-radius: 5px;
+        }
+        #input-container input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        #input-container button {
+            padding: 12px 20px;
+            border: none;
+            background: #007bff; /* Button color */
+            color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #input-container button:hover {
+            background: #0056b3;
+        }
+        select {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ffcc00; /* Database selection color */
+            color: #333;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1>Mango X - AI Chat</h1>
+        
+        <!-- Dropdown for cloud database selection -->
+        <select id="database-select">
+            <option value="">Select Cloud Database</option>
+            <option value="gcp_firestore">Google Cloud Firestore</option>
+            <option value="azure_cosmos">Azure Cosmos DB</option>
+            <option value="aws_dynamodb">AWS DynamoDB</option>
+        </select>
+        
+        <div id="messages"></div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script type="module" src="master.js"></script>
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            const dbSelection = document.getElementById('database-select').value;
+            if (!userInput) return;
+
+            const messageContainer = document.getElementById('messages');
+            const userMessage = createMessageElement('user', userInput);
+            messageContainer.appendChild(userMessage);
+
+            try {
+                const botResponse = await getBotResponse(userInput, dbSelection);
+
+                const botMessage = createMessageElement('bot', botResponse);
+                messageContainer.appendChild(botMessage);
+            } catch (error) {
+                const botMessage = createMessageElement('bot', 'An error occurred while processing your request.');
+                messageContainer.appendChild(botMessage);
+            }
+
+            document.getElementById('user-input').value = '';
+            messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll to the latest message
+        }
+
+        async function getBotResponse(userInput, dbSelection) {
+            // Here you would handle the database selection logic to fetch data.
+            // Currently, it uses Wikipedia API for demonstration purposes.
+
+            const response = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(userInput)}&origin=*`);
+            const data = await response.json();
+            const searchResults = data.query.search;
+
+            if (searchResults.length > 0) {
+                return searchResults[0].snippet.replace(/<\/?[^>]+(>|$)/g, ""); // Remove HTML tags
+            } else {
+                return 'Sorry, no results found for your query.';
+            }
+        }
+
+        function createMessageElement(sender, text) {
+            const message = document.createElement('div');
+            message.className = `message ${sender}`;
+            message.textContent = text;
+            return message;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="ICON.JPEG" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebulax UTX Configuration - Holo Ultra UI</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a1a1d; /* Fundo escuro estilo Holo Ultra */
+            color: #f0f0f0;
+        }
+        #chat-container {
+            width: 90%;
+            max-width: 850px; /* Ajuste de largura */
+            padding: 30px;
+            background: linear-gradient(135deg, #ff4500, #00bfff); /* Gradiente vibrante estilo Nintendo */
+            border-radius: 30px; /* Bordas suaves futuristas */
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            overflow: hidden;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.8em;
+            color: #fffacd; /* Cor vibrante */
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px #000;
+        }
+        #messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background-color: #252526; /* Fundo escuro para as mensagens */
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 12px;
+            max-width: 80%;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .message.user {
+            text-align: right;
+            background-color: #ffa500; /* Cores inspiradas em Mario para mensagens do usuário */
+            color: #fff;
+            margin-left: auto;
+            border-radius: 12px 12px 0 12px;
+        }
+        .message.bot {
+            text-align: left;
+            background-color: #87ceeb; /* Azul do céu de Zelda para bot */
+            color: #000;
+            border-radius: 12px 12px 12px 0;
+        }
+        #input-container {
+            display: flex;
+            background-color: #333;
+            border-radius: 12px;
+            padding: 10px;
+        }
+        #input-container input {
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            margin-right: 10px;
+            background-color: #1f1f1f;
+            color: #fff;
+            flex: 1;
+        }
+        #input-container button {
+            padding: 15px;
+            border: none;
+            background: #32cd32; /* Verde inspirado em Luigi */
+            color: #fff;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #input-container button:hover {
+            background: #228b22; /* Verde mais escuro no hover */
+        }
+        /* Configuration Styles - Holo Ultra UI */
+        #config-container {
+            margin-top: 20px;
+            background-color: #444;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        #config-container h2 {
+            text-align: center;
+            font-size: 1.8em;
+            color: #32cd32; /* Verde Luigi */
+            margin-bottom: 15px;
+        }
+        .config-option {
+            margin: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+            #chat-container {
+                padding: 15px;
+            }
+            #input-container input {
+                padding: 10px;
+            }
+            #input-container button {
+                padding: 10px;
+                font-size: 14px;
+            }
+            #config-container h2 {
+                font-size: 1.4em;
+            }
+            .config-option {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .config-option label {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1>Holo Ultra UI</h1>
+        <div id="messages"></div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <div id="config-container">
+            <h2>Configuration Center</h2>
+            <div class="config-option">
+                <label for="bg-color">Background Color:</label>
+                <input type="color" id="bg-color" value="#ff4500" onchange="changeBackgroundColor()">
+            </div>
+            <div class="config-option">
+                <label for="font-size">Font Size:</label>
+                <select id="font-size" onchange="changeFontSize()">
+                    <option value="14">Small</option>
+                    <option value="16" selected>Medium</option>
+                    <option value="18">Large</option>
+                </select>
+            </div>
+            <div class="config-option">
+                <label for="message-color">Message Color:</label>
+                <input type="color" id="message-color" value="#87ceeb" onchange="changeMessageColor()">
+            </div>
+            <div class="config-option">
+                <label for="transparency">Transparency:</label>
+                <input type="range" id="transparency" min="0" max="100" value="100" onchange="changeTransparency()">
+                <span id="transparency-value">100%</span>
+            </div>
+            <div class="config-option">
+                <label for="theme-select">Select Theme:</label>
+                <select id="theme-select" onchange="changeTheme()">
+                    <option value="default">Default</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            if (!userInput) return;
+
+            addMessage('user', userInput);
+
+            try {
+                const response = await fetch('http://localhost:8080/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userInput }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    addMessage('bot', data.response);
+                } else {
+                    addMessage('bot', 'Server error. Try again.');
+                }
+            } catch (error) {
+                addMessage('bot', 'Failed to connect to the server.');
+            }
+
+            document.getElementById('user-input').value = '';
+        }
+
+        function addMessage(sender, text) {
+            const messageContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${sender}`;
+            messageElement.textContent = text;
+            messageContainer.appendChild(messageElement);
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+
+        function changeBackgroundColor() {
+            const newColor = document.getElementById('bg-color').value;
+            document.getElementById('chat-container').style.backgroundColor = newColor;
+        }
+
+        function changeFontSize() {
+            const newSize = document.getElementById('font-size').value + 'px';
+            document.body.style.fontSize = newSize;
+        }
+
+        function changeMessageColor() {
+            const newColor = document.getElementById('message-color').value;
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                if (message.classList.contains('bot')) {
+                    message.style.backgroundColor = newColor;
+                }
+            });
+        }
+
+        function changeTransparency() {
+            const transparency = document.getElementById('transparency').value;
+            const opacity = transparency / 100;
+            document.getElementById('chat-container').style.opacity = opacity;
+            document.getElementById('transparency-value').textContent = transparency + '%';
+        }
+
+        function changeTheme() {
+            const theme = document.getElementById('theme-select').value;
+            switch(theme) {
+                case 'dark':
+                    document.body.style.backgroundColor = '#1a1a1d';
+                    document.getElementById('chat-container').style.background = 'linear-gradient(135deg, #000000, #434343)';
+                    break;
+                case 'light':
+                    document.body.style.backgroundColor = '#f0f0f0';
+                    document.getElementById('chat-container').style.background = 'linear-gradient(135deg, #ffffff, #e0e0e0)';
+                    break;
+                default:
+                    document.body.style.backgroundColor = '#1a1a1d';
+                    document.getElementById('chat-container').style.background = 'linear-gradient(135deg, #ff4500, #00bfff)';
+            }
+        }
+    </script>
+</body>
+</html>
